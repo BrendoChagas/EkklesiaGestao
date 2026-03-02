@@ -74,4 +74,31 @@ class MembersService {
       throw Exception('Erro ao remover membro: $e');
     }
   }
+
+  // Criar membro chamando Edge Function `create_member` (Requer admin autenticado)
+  Future<void> createMember({
+    required String email,
+    required String password,
+    required String nomeCompleto,
+    required String cargo,
+    required String role,
+  }) async {
+    try {
+      final response = await _supabase.functions.invoke(
+        'create_member',
+        body: {
+          'email': email,
+          'password': password,
+          'nomeCompleto': nomeCompleto,
+          'cargo': cargo,
+          'role': role,
+        },
+      );
+      if (response.status != 200) {
+        throw Exception('Erro ao processar criação. Verifique seus privilégios de Admin.');
+      }
+    } catch (e) {
+      throw Exception('Erro ao criar membro: $e');
+    }
+  }
 }

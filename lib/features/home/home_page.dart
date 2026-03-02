@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers/auth_provider.dart';
 import '../members/members_page.dart'; // Add o import novo
 import '../expenses/expenses_page.dart'; // Adicondo import das dispesas
+import 'dashboard_page.dart'; // Import the new dashboard
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -15,7 +16,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = const [
-    Center(child: Text('Dashboard Analytics / Visão Geral', style: TextStyle(fontSize: 24))),
+    DashboardPage(), // Usando o novo widget do painel central
     MembersPage(), // Inserir a classe importável MembersPage no lugar do texto cru
     ExpensesPage(), // Abas de Despesa conectada
   ];

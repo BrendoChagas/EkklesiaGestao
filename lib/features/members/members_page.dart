@@ -123,10 +123,122 @@ class MembersPage extends ConsumerWidget {
           ),
         ],
       ),
-      // FAB Só aparece se for ADMIN (NOTA: Novos cadastros demandam Auth real)
+      // FAB Só aparece se for ADMIN
       floatingActionButton: isAdmin
-          ? null // No Supabase, o ideal é o app usar uma Server Function para gerar novos *Auth Users*.
-          : null, // Manteremos o FAB removido por enquanto devido as limitações do "Adicionar membro novo na tabela auth.users pelo client". 
+          ? FloatingActionButton.extended(
+              onPressed: () => _showCreateDialog(context, ref),
+              icon: const Icon(Icons.person_add),
+              label: const Text('Novo Membro'),
+            )
+          : null,
+    );
+  }
+
+  // --- Função: Abrir Modal de Criação ---
+  void _showCreateDialog(BuildContext context, WidgetRef ref) {
+    final nomeController = TextEditingController();
+    final cargoController = TextEditingController();
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
+    final roleController = TextEditingController(text: 'membro');
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text('Novo Membro'),
+          content: SingleChildScrollView(
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: nomeController,
+                    decoration: const InputDecoration(labelText: 'Nome Completo'),
+                    validator: (val) => val!.isEmpty ? 'Campo obrigatório' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: cargoController,
+                    decoration: const InputDecoration(labelText: 'Cargo na Igreja'),
+                    validator: (val) => val!.isEmpty ? 'Campo obrigatório' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: emailController,
+                    decoration: const InputDecoration(labelText: 'E-mail (Login)'),
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (val) => val!.isEmpty || !val.contains('@') ? 'E-mail inválido' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: passwordController,
+                    decoration: const InputDecoration(labelText: 'Senha Inicial'),
+                    obscureText: true,
+                    validator: (val) => val!.length < 6 ? 'Mínimo de 6 caracteres' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: roleController.text,
+                    decoration: const InputDecoration(labelText: 'Nível de Acesso'),
+                    items: const [
+                      DropdownMenuItem(value: 'membro', child: Text('Membro')),
+                      DropdownMenuItem(value: 'admin', child: Text('Administrador')),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) roleController.text = val;
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (formKey.currentState!.validate()) {
+                  try {
+                    // Mostrar loading visualmente se possivel...
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Criando usuário... Aguarde.'), duration: Duration(seconds: 1)),
+                    );
+
+                    await ref.read(membersServiceProvider).createMember(
+                      email: emailController.text.trim(),
+                      password: passwordController.text,
+                      nomeCompleto: nomeController.text.trim(),
+                      cargo: cargoController.text.trim(),
+                      role: roleController.text,
+                    );
+
+                    ref.refresh(membersListProvider); // Recarrega a lista
+                    
+                    if (ctx.mounted) {
+                      Navigator.of(ctx).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Membro criado com sucesso!')),
+                      );
+                    }
+                  } catch (e) {
+                    if (ctx.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Erro ao criar membro: $e'), backgroundColor: Colors.red),
+                      );
+                    }
+                  }
+                }
+              },
+              child: const Text('Criar Membro'),
+            ),
+          ],
+        );
+      },
     );
   }
 

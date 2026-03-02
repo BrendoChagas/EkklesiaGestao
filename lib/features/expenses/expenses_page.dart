@@ -99,44 +99,58 @@ class ExpensesPage extends ConsumerWidget {
 
                     return Card(
                       margin: const EdgeInsets.only(bottom: 12.0),
-                      child: ListTile(
-                        leading: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.1),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.money_off, color: Colors.red),
-                        ),
-                        title: Text(
-                          expense.descricao,
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 18),
-                        ),
-                        subtitle: Text(
-                          dateFormat.format(expense.data),
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Text(
-                              currencyFormat.format(expense.valor),
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.red.shade700,
-                                  ),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.red.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.money_off, color: Colors.red),
                             ),
-                            if (isAdmin) ...[
-                              const SizedBox(width: 8),
-                              IconButton(
-                                icon: const Icon(Icons.edit, color: Colors.blueGrey),
-                                onPressed: () => _showDespesaDialog(context, ref, expense: expense),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    expense.descricao,
+                                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 18),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    dateFormat.format(expense.data),
+                                    style: Theme.of(context).textTheme.bodyMedium,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    currencyFormat.format(expense.valor),
+                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.red.shade700,
+                                        ),
+                                  ),
+                                ],
                               ),
-                              IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.redAccent),
-                                onPressed: () => _confirmDeleteExpense(context, ref, expense),
+                            ),
+                            if (isAdmin)
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit, color: Colors.blueGrey),
+                                    onPressed: () => _showDespesaDialog(context, ref, expense: expense),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete, color: Colors.redAccent),
+                                    onPressed: () => _confirmDeleteExpense(context, ref, expense),
+                                  ),
+                                ],
                               ),
-                            ]
                           ],
                         ),
                       ),
