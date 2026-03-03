@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers/auth_provider.dart';
 import '../members/members_page.dart'; // Add o import novo
 import '../expenses/expenses_page.dart'; // Adicondo import das dispesas
+import '../incomes/incomes_page.dart'; // Import das Entradas / Ofertas
 import 'dashboard_page.dart'; // Import the new dashboard
 
 class HomePage extends ConsumerStatefulWidget {
@@ -19,6 +20,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     DashboardPage(), // Usando o novo widget do painel central
     MembersPage(), // Inserir a classe importável MembersPage no lugar do texto cru
     ExpensesPage(), // Abas de Despesa conectada
+    IncomesPage(), // Abas de Entradas/Ofertas conectada
   ];
 
   @override
@@ -79,6 +81,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                 icon: Icon(Icons.attach_money_outlined),
                 selectedIcon: Icon(Icons.attach_money),
                 label: Text('Despesas'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.savings_outlined),
+                selectedIcon: Icon(Icons.savings),
+                label: Text('Ofertas'),
               ),
             ],
           ),

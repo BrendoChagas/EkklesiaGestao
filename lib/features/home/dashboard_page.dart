@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../members/members_provider.dart';
 import '../expenses/expenses_provider.dart';
+import '../incomes/incomes_provider.dart';
 
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
@@ -12,18 +13,26 @@ class DashboardPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final membersAsync = ref.watch(membersListProvider);
     final expensesAsync = ref.watch(expensesListProvider);
+    final incomesAsync = ref.watch(incomesListProvider);
     
     // We can compute the total members and total expenses
     int totalMembers = 0;
-    double totalAmmount = 0;
+    double totalExpensesAmount = 0;
+    double totalIncomesAmount = 0;
 
     membersAsync.whenData((members) {
       totalMembers = members.length;
     });
 
     expensesAsync.whenData((expenses) {
-      totalAmmount = expenses.fold(0.0, (sum, expense) => sum + expense.valor);
+      totalExpensesAmount = expenses.fold(0.0, (sum, expense) => sum + expense.valor);
     });
+
+    incomesAsync.whenData((incomes) {
+      totalIncomesAmount = incomes.fold(0.0, (sum, income) => sum + income.valor);
+    });
+
+    double finalBalance = totalIncomesAmount - totalExpensesAmount;
 
     final currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
 
@@ -51,19 +60,57 @@ class DashboardPage extends ConsumerWidget {
                 );
                 final card2 = _buildSummaryCard(
                   context,
+                  title: 'Total de Entradas',
+                  value: incomesAsync.isLoading ? '...' : currencyFormat.format(totalIncomesAmount),
+                  icon: Icons.download,
+                  color: Colors.green,
+                );
+                final card3 = _buildSummaryCard(
+                  context,
                   title: 'Despesas Totais',
-                  value: expensesAsync.isLoading ? '...' : currencyFormat.format(totalAmmount),
-                  icon: Icons.attach_money,
+                  value: expensesAsync.isLoading ? '...' : currencyFormat.format(totalExpensesAmount),
+                  icon: Icons.upload,
                   color: Colors.red,
                 );
+                final card4 = _buildSummaryCard(
+                  context,
+                  title: 'Saldo Final',
+                  value: (incomesAsync.isLoading || expensesAsync.isLoading) ? '...' : currencyFormat.format(finalBalance),
+                  icon: Icons.account_balance_wallet,
+                  color: finalBalance >= 0 ? Colors.teal : Colors.orange,
+                );
 
-                if (constraints.maxWidth > 500) {
+                if (constraints.maxWidth > 800) {
                   return Row(
                     children: [
                       Expanded(child: card1),
                       const SizedBox(width: 16),
                       Expanded(child: card2),
+                      const SizedBox(width: 16),
+                      Expanded(child: card3),
+                      const SizedBox(width: 16),
+                      Expanded(child: card4),
                     ],
+                  );
+                } else if (constraints.maxWidth > 500) {
+                  return Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(child: card1),
+                          const SizedBox(width: 16),
+                          Expanded(child: card2),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                           Expanded(child: card3),
+                           const SizedBox(width: 16),
+                           Expanded(child: card4),
+                        ]
+                      )
+                    ]
                   );
                 } else {
                   return Column(
@@ -72,6 +119,10 @@ class DashboardPage extends ConsumerWidget {
                       card1,
                       const SizedBox(height: 16),
                       card2,
+                      const SizedBox(height: 16),
+                      card3,
+                      const SizedBox(height: 16),
+                      card4,
                     ],
                   );
                 }
@@ -96,6 +147,7 @@ class DashboardPage extends ConsumerWidget {
                   onTap: () {
                     ref.refresh(membersListProvider);
                     ref.refresh(expensesListProvider);
+                    ref.refresh(incomesListProvider);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Dados atualizados com sucesso!'), duration: Duration(seconds: 1)),
                     );
